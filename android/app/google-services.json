@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "85111431262",
+    "firebase_url": "https://recipe-21b6d.firebaseio.com",
+    "project_id": "recipe-21b6d",
+    "storage_bucket": "recipe-21b6d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:85111431262:android:93f10751e00eb9c245d4cf",
+        "android_client_info": {
+          "package_name": "com.priyanka.recipe"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "85111431262-82jrlp3c8jpq2caj2kepan4uot00u9ot.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.priyanka.recipe",
+            "certificate_hash": "7140e3d2e373af73b79570bd8801db86687085be"
+          }
+        },
+        {
+          "client_id": "85111431262-uprm33pelkjsrkh1d7m97kf8n1sffprh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGRTt4RLDto3078LnW-WU3HFWKZGQzX6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "85111431262-uprm33pelkjsrkh1d7m97kf8n1sffprh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
