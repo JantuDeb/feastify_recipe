@@ -21,11 +21,12 @@ class LandingPage extends StatelessWidget {
       if (!doc.exists) {
         userRef.document(user.uid).setData({
           "id": user.uid,
-          "username": user.displayName,
+          "userName": user.displayName,
           "email": user.email,
           "photoUrl": user.photoUrl,
           "bio": "",
-          "location": "India"
+          "location": "India",
+          "mobile": ""
         });
       }
     }
@@ -39,6 +40,7 @@ class LandingPage extends StatelessWidget {
               return SignInPage.create(context);
             }
             getUserID(user);
+
             return Provider.value(
               value: user,
               child: Provider<Database>(

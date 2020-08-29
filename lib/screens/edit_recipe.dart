@@ -92,6 +92,7 @@ class _EditRecipeState extends State<EditRecipe> {
         methods: _methods,
         ingredients: _ingredients,
         recipeId: widget.user.uid,
+        createdBy: widget.user.uid,
         createdAt: Timestamp.now());
     await widget.database
         .createRecipe(recipe)

@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/models/recipe.dart';
+import 'package:recipe/screens/recipe_view.dart';
 import 'package:recipe/services/database.dart';
 
 class Home extends StatefulWidget {
@@ -102,6 +103,21 @@ class _LatestRecipeState extends State<LatestRecipe> {
     return StreamBuilder<List<Recipe>>(
         stream: widget.database.readRecipe(),
         builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if (snapshot.connectionState == ConnectionState.done) {
+            return Center(
+              child: Text("No Recipe found"),
+            );
+          }
+          if (snapshot.connectionState == ConnectionState.none) {
+            return Center(
+              child: Text("No Recipe found"),
+            );
+          }
           if (snapshot.hasError) {
             return Text("error:${snapshot.error}");
           }
@@ -113,8 +129,11 @@ class _LatestRecipeState extends State<LatestRecipe> {
               itemCount: recipes.length,
               scrollDirection: Axis.horizontal,
               itemBuilder: (BuildContext context, int index) {
-                return Container(
-                  // height: 200.0,
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => RecipeView()));
+                  },
                   child: Container(
                     margin: EdgeInsets.all(8.0),
                     child: ClipRRect(

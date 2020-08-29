@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/models/recipe.dart';
+import 'package:recipe/screens/edit_profile.dart';
 
 import 'package:recipe/screens/edit_recipe.dart';
 import 'package:recipe/services/auth.dart';
 import 'package:recipe/services/database.dart';
 
 class MyProfile extends StatelessWidget {
+  const MyProfile({Key key, this.postId}) : super(key: key);
+  final String postId;
   @override
   Widget build(BuildContext context) {
     TextStyle style1 = TextStyle(color: Colors.white, fontSize: 18.0);
@@ -21,21 +24,37 @@ class MyProfile extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Container(
-                  margin: EdgeInsets.all(15.0),
-                  width: 100.0,
-                  height: 40.0,
-                  child: Center(
-                      child: Text(
-                    "Edit Profile",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold),
-                  )),
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white),
-                      borderRadius: BorderRadius.circular(50.0)),
+                InkWell(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => EditProfile(
+                                database: database,
+                              ))),
+                  child: Container(
+                    margin: EdgeInsets.all(15.0),
+                    width: 100.0,
+                    height: 40.0,
+                    child: Center(
+                        child: postId == null
+                            ? Text(
+                                "Edit Profile",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold),
+                              )
+                            : Text(
+                                "Follow",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold),
+                              )),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white),
+                        borderRadius: BorderRadius.circular(50.0)),
+                  ),
                 )
               ],
             ),
@@ -56,7 +75,7 @@ class MyProfile extends StatelessWidget {
                   child: CircleAvatar(
                     child: ClipOval(
                       child: user.photoUrl == null
-                          ? Image.network(
+                          ? Image.asset(
                               "images/profile_image.jpg",
                               fit: BoxFit.cover,
                               width: 90.0,
@@ -251,7 +270,10 @@ class MyProfile extends StatelessWidget {
                                       Expanded(
                                         flex: 1,
                                         child: InkWell(
-                                          // onTap: () => snapshot.,
+                                          onTap: () async {
+                                            await database
+                                                .removeDocument(snapshot.id);
+                                          },
                                           child: Container(
                                             color: Color(0xFF1b2327),
                                             height: 50.0,

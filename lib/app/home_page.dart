@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:recipe/common_widgets/saved_recipe_model.dart';
 import 'package:recipe/screens/add_recipe.dart';
 import 'package:recipe/screens/drawer_list.dart';
@@ -8,6 +9,7 @@ import 'package:recipe/screens/profile.dart';
 import 'package:recipe/screens/saved_recipe_list.dart';
 import 'package:recipe/screens/search_recipe.dart';
 import 'package:recipe/screens/shopping_list.dart';
+import 'package:recipe/services/database.dart';
 
 class HomePage extends StatelessWidget {
   // Future<void> _signOut(BuildContext context) async {
@@ -33,6 +35,8 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Database database = Provider.of<Database>(context, listen: false);
+
     PageController _pageController = PageController();
     Color colorWhite = Colors.white;
     int _selectedIndex = 0;

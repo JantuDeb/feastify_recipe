@@ -1,13 +1,15 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
 import 'package:provider/provider.dart';
 import 'package:recipe/models/recipe.dart';
 import 'package:recipe/screens/add_categories.dart';
 import 'package:recipe/services/auth.dart';
-// import 'package:recipe/services/auth.dart';
+
 import 'package:recipe/services/database.dart';
 // import 'package:reorderables/reorderables.dart';
 
@@ -23,8 +25,9 @@ class _AddRecipeState extends State<AddRecipe> {
   List<String> _ingredients = [];
   List<String> _methods = [];
   Set<String> categories = {};
-  File _imageFile;
-  String _imageUrl;
+  File imageFile;
+  // String imgUrl;
+
   final picker = ImagePicker();
   List<String> searchList = List();
 
@@ -54,17 +57,26 @@ class _AddRecipeState extends State<AddRecipe> {
     setState(() {});
   }
 
-  Future<void> _submit() async {
+  // Future<String> uploadImageToStorage(File imageFile) async {
+  //   StorageReference _storageReference = FirebaseStorage.instance
+  //       .ref()
+  //       .child('recipeImage/${DateTime.now().millisecondsSinceEpoch}');
+  //   StorageUploadTask storageUploadTask = _storageReference.putFile(imageFile);
+  //   var url = await (await storageUploadTask.onComplete).ref.getDownloadURL();
+  //   return url;
+  // }
+
+  Future<void> _submit({@required String photoUrl}) async {
     print(recipeTitleController.text.length);
     setSearchParam(recipeTitleController.text);
     // final auth = Provider.of<AuthBase>(context, listen: false);
     final user = Provider.of<User>(context, listen: false);
     final id = widget.recipe?.id ?? documentIdFromDTN();
     final database = Provider.of<Database>(context, listen: false);
+
     final recipe = Recipe(
         id: id,
-        photoUrl:
-            'https://images.unsplash.com/photo-1523205771623-e0faa4d2813d?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=89719a0d55dd05e2deae4120227e6efc&auto=format&fit=crop&w=1953&q=80',
+        photoUrl: photoUrl,
         recipeTitle: recipeTitleController.text,
         createdBy: user.displayName,
         categories: categories.toList(),
@@ -77,11 +89,7 @@ class _AddRecipeState extends State<AddRecipe> {
         cookingTime: recipeCookingTimeController.text,
         searchQuery: searchList,
         createdAt: Timestamp.now());
-    await database.createRecipe(recipe);
-    setState(() {
-      _clearController();
-      isLoading = false;
-    });
+    database.createRecipe(recipe);
   }
 
   // Future _getLocaleImage(String s) async {
@@ -108,12 +116,11 @@ class _AddRecipeState extends State<AddRecipe> {
     _ingredients.clear();
     _methods.clear();
     categories.clear();
-    _imageFile = null;
-    _imageUrl = null;
+    imageFile = null;
     searchList.clear();
   }
 
-  void isValid() {
+  bool isValid() {
     if (_ingredients.length >= 1 &&
             _methods.length >= 1 &&
             categories.length >= 1 &&
@@ -123,11 +130,10 @@ class _AddRecipeState extends State<AddRecipe> {
             recipeCookingTimeController.text.length >= 3
         // &&_imageUrl != null
         ) {
-      _submit();
+      // compressImage();
+      return true;
     } else {
-      setState(() {
-        isLoading = false;
-      });
+      return false;
     }
   }
 
@@ -139,6 +145,41 @@ class _AddRecipeState extends State<AddRecipe> {
     }
     return searchList;
   }
+
+  void handleSubmit() async {
+    final database = Provider.of<Database>(context, listen: false);
+    String url = await database.uploadImageToStorage(imageFile);
+    _submit(photoUrl: url);
+    _clearController();
+    setState(() {
+      // _clearController();
+      isLoading = false;
+      imageFile = null;
+    });
+  }
+  // Future<void> compressImage() async {
+  //   if (imageFile != null) {
+  //     print('starting compression');
+  //     final tempDir = await getTemporaryDirectory();
+  //     final path = tempDir.path;
+  //     int rand = Random().nextInt(10000);
+
+  //     Im.Image image = Im.decodeImage((imageFile).readAsBytesSync());
+  //     Im.copyResize(image, height: 675, width: 960);
+
+  //     var _newImage = new File('$path/img_$rand.jpg')
+  //       ..writeAsBytesSync(Im.encodeJpg(image, quality: 23));
+
+  //     setState(() {
+  //       imageFile = _newImage;
+  //       isLoading = false;
+  //       print('done');
+  //     });
+  //   } else {
+  //     print("error ");
+  //     isLoading = false;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -154,16 +195,13 @@ class _AddRecipeState extends State<AddRecipe> {
     }
 
     Widget _showImage() {
-      if (_imageUrl != null) {
-        return Text("Image from url");
-      }
-      if (_imageFile != null) {
+      if (imageFile != null) {
         return Container(
           width: MediaQuery.of(context).size.width,
           child: Stack(fit: StackFit.expand, children: [
             Container(
               child: Image.file(
-                _imageFile,
+                imageFile,
                 fit: BoxFit.cover,
               ),
             ),
@@ -185,7 +223,7 @@ class _AddRecipeState extends State<AddRecipe> {
                     ),
                     onPressed: () {
                       setState(() {
-                        _imageFile = null;
+                        imageFile = null;
                       });
                     }),
               ),
@@ -220,13 +258,13 @@ class _AddRecipeState extends State<AddRecipe> {
                 InkWell(
                   onTap: () async {
                     final pickedFile = await picker.getImage(
-                      preferredCameraDevice: CameraDevice.rear,
-                      imageQuality: 100,
-                      source: ImageSource.camera,
-                    );
+                        preferredCameraDevice: CameraDevice.rear,
+                        imageQuality: 50,
+                        source: ImageSource.camera,
+                        maxHeight: 960,
+                        maxWidth: 675);
                     setState(() {
-                      if (pickedFile != null)
-                        _imageFile = File(pickedFile.path);
+                      if (pickedFile != null) imageFile = File(pickedFile.path);
                     });
                   },
                   child: Container(
@@ -249,11 +287,12 @@ class _AddRecipeState extends State<AddRecipe> {
                 InkWell(
                   onTap: () async {
                     final pickedFile = await picker.getImage(
-                      source: ImageSource.gallery,
-                    );
+                        source: ImageSource.gallery,
+                        imageQuality: 50,
+                        maxHeight: 960,
+                        maxWidth: 675);
                     setState(() {
-                      if (pickedFile != null)
-                        _imageFile = File(pickedFile.path);
+                      if (pickedFile != null) imageFile = File(pickedFile.path);
                     });
                   },
                   child: Container(
@@ -695,7 +734,9 @@ class _AddRecipeState extends State<AddRecipe> {
                         setState(() {
                           isLoading = true;
                         });
-                        isValid();
+                        print(isLoading);
+                        isValid() == true ? handleSubmit() : notValid();
+                        // isValid();
                       },
                       icon: Icon(Icons.check_circle),
                       iconSize: 50.0,
@@ -712,4 +753,11 @@ class _AddRecipeState extends State<AddRecipe> {
   }
 
   TextStyle style1 = TextStyle(color: Colors.white);
+
+  notValid() {
+    setState(() {
+      isLoading = false;
+    });
+    print("not Valid");
+  }
 }
