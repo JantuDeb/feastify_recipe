@@ -26,7 +26,9 @@ class LandingPage extends StatelessWidget {
           "photoUrl": user.photoUrl,
           "bio": "",
           "location": "India",
-          "mobile": ""
+          "mobile": "",
+          "followersCount": 0,
+          "followingCount": 0
         });
       }
     }

@@ -28,7 +28,6 @@ class _DrawerListState extends State<DrawerList> {
   Future<void> _signOut(BuildContext context) async {
     try {
       final auth = Provider.of<AuthBase>(context, listen: false);
-
       await auth.signOut();
     } catch (e) {
       print(e.toString());

@@ -7,10 +7,12 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:provider/provider.dart';
 import 'package:recipe/models/recipe.dart';
+import 'package:recipe/models/user.dart';
 import 'package:recipe/screens/add_categories.dart';
 import 'package:recipe/services/auth.dart';
 
 import 'package:recipe/services/database.dart';
+import 'package:reorderables/reorderables.dart';
 // import 'package:reorderables/reorderables.dart';
 
 class AddRecipe extends StatefulWidget {
@@ -21,7 +23,8 @@ class AddRecipe extends StatefulWidget {
   _AddRecipeState createState() => _AddRecipeState();
 }
 
-class _AddRecipeState extends State<AddRecipe> {
+class _AddRecipeState extends State<AddRecipe>
+    with AutomaticKeepAliveClientMixin {
   List<String> _ingredients = [];
   List<String> _methods = [];
   Set<String> categories = {};
@@ -40,6 +43,7 @@ class _AddRecipeState extends State<AddRecipe> {
   final recipeServesController = TextEditingController();
   final recipeCookingTimeController = TextEditingController();
   bool isLoading = false;
+  UserData userData;
 
   @override
   void dispose() {
@@ -47,9 +51,20 @@ class _AddRecipeState extends State<AddRecipe> {
     super.dispose();
   }
 
+  void getData() async {
+    Database database = Provider.of<Database>(context, listen: false);
+    UserData data = await database.getUserById();
+    setState(() {
+      userData = data;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getData();
+    });
   }
 
   function(value) {
@@ -78,7 +93,7 @@ class _AddRecipeState extends State<AddRecipe> {
         id: id,
         photoUrl: photoUrl,
         recipeTitle: recipeTitleController.text,
-        createdBy: user.displayName,
+        createdBy: userData.userName,
         categories: categories.toList(),
         methods: _methods,
         ingredients: _ingredients,
@@ -88,6 +103,8 @@ class _AddRecipeState extends State<AddRecipe> {
         recipeLink: recipeLinkController.text,
         cookingTime: recipeCookingTimeController.text,
         searchQuery: searchList,
+        likes: {},
+        viewCount: 0,
         createdAt: Timestamp.now());
     database.createRecipe(recipe);
   }
@@ -183,6 +200,7 @@ class _AddRecipeState extends State<AddRecipe> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     void addIngredients(String ingredient) {
       if (ingredient.isNotEmpty) {
         print(ingredient);
@@ -332,6 +350,92 @@ class _AddRecipeState extends State<AddRecipe> {
       }
     }
 
+    List<Widget> _buildMethods() {
+      return _methods
+          .map<Widget>(
+            (e) => Container(
+              // margin: EdgeInsets.symmetric(horizontal: 5.0),
+              color: Color(0xFF263238),
+              key: ValueKey(e),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Step ${_methods.indexOf(e) + 1}: " + e,
+                      style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                    ),
+                    Spacer(),
+                    IconButton(
+                        icon: Icon(
+                          Icons.reorder,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          // _methods.removeAt(_methods.indexOf(e));
+                          // setState(() {});
+                        }),
+                    IconButton(
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          _methods.removeAt(_methods.indexOf(e));
+                          setState(() {});
+                        })
+                  ],
+                ),
+              ),
+            ),
+          )
+          .toList();
+    }
+
+    List<Widget> _buildIngred() {
+      return _ingredients
+          .map<Widget>(
+            (e) => Container(
+              // margin: EdgeInsets.symmetric(horizontal: 5.0),
+              color: Color(0xFF263238),
+              key: ValueKey(e),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 5.0, right: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "${_ingredients.indexOf(e) + 1}: " + e,
+                      style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                    ),
+                    Spacer(),
+                    IconButton(
+                        icon: Icon(
+                          Icons.reorder,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          // _methods.removeAt(_methods.indexOf(e));
+                          // setState(() {});
+                        }),
+                    IconButton(
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          _ingredients.removeAt(_ingredients.indexOf(e));
+                          setState(() {});
+                        })
+                  ],
+                ),
+              ),
+            ),
+          )
+          .toList();
+    }
+
     return Container(
       color: Color(0xFF263238),
       child: ListView(
@@ -347,12 +451,85 @@ class _AddRecipeState extends State<AddRecipe> {
             thickness: 0.0,
             color: Colors.white,
           ),
-          Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Column(
-              children: <Widget>[
-                TextField(
-                  controller: recipeTitleController,
+          TextField(
+            controller: recipeTitleController,
+            keyboardType: TextInputType.text,
+            decoration: InputDecoration(
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white, width: 0.0),
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white, width: 0.0),
+              ),
+              alignLabelWithHint: true,
+              labelText: "Recipe Title",
+              labelStyle: TextStyle(color: Colors.white),
+            ),
+          ),
+
+          // Recipe description
+          TextField(
+            controller: recipeDesController,
+            keyboardType: TextInputType.text,
+            maxLines: 10,
+            minLines: 1,
+            decoration: InputDecoration(
+              suffixText: "200 words",
+              suffixStyle: TextStyle(color: Colors.white),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white, width: 0.0),
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white, width: 0.0),
+              ),
+              alignLabelWithHint: true,
+              labelText: "Recipe Description",
+              labelStyle: TextStyle(color: Colors.white),
+            ),
+          ),
+
+          // video link
+          TextField(
+            controller: recipeLinkController,
+            keyboardType: TextInputType.url,
+            decoration: InputDecoration(
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white, width: 0.0),
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white, width: 0.0),
+              ),
+              alignLabelWithHint: true,
+              labelText: "Youtube Video Link",
+              labelStyle: TextStyle(color: Colors.white),
+            ),
+          ),
+
+          Row(
+            children: <Widget>[
+              Container(
+                width: MediaQuery.of(context).size.width * 0.4,
+                child: TextField(
+                  controller: recipeServesController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 0.0),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 0.0),
+                    ),
+                    alignLabelWithHint: true,
+                    labelText: "Serves",
+                    labelStyle: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+              Spacer(),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.4,
+                child: TextField(
+                  controller: recipeCookingTimeController,
                   keyboardType: TextInputType.text,
                   decoration: InputDecoration(
                     focusedBorder: UnderlineInputBorder(
@@ -362,35 +539,193 @@ class _AddRecipeState extends State<AddRecipe> {
                       borderSide: BorderSide(color: Colors.white, width: 0.0),
                     ),
                     alignLabelWithHint: true,
-                    labelText: "Recipe Title",
+                    labelText: "Cook Time",
+                    hintText: "2 hr 30 min",
                     labelStyle: TextStyle(color: Colors.white),
                   ),
                 ),
-
-                // Recipe description
-                TextField(
-                  controller: recipeDesController,
-                  keyboardType: TextInputType.text,
-                  maxLines: 10,
-                  minLines: 1,
-                  decoration: InputDecoration(
-                    suffixText: "200 words",
-                    suffixStyle: TextStyle(color: Colors.white),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white, width: 0.0),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white, width: 0.0),
-                    ),
-                    alignLabelWithHint: true,
-                    labelText: "Recipe Description",
-                    labelStyle: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              margin: EdgeInsets.only(top: 10.0),
+              child: Text(
+                "Categories:",
+                style: style1,
+              ),
+            ),
+          ),
+          Container(
+            height: 50.0,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: categories.length == 0
+                  ? [
+                      Center(
+                        child: Text(
+                          "No category selected",
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.5),
+                          ),
+                        ),
+                      )
+                    ]
+                  : categories
+                      .map(
+                        (e) => Container(
+                          margin:
+                              EdgeInsets.only(left: 5.0, right: 5.0, top: 10.0),
+                          height: 40.0,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Row(
+                            children: [
+                              Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 8.0, bottom: 8.0, left: 8.0),
+                                  child: Text(
+                                    e,
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                  padding: EdgeInsets.all(0.0),
+                                  icon: Image.asset('images/icon/close.png',
+                                      width: 15.0,
+                                      height: 15.0,
+                                      color: Colors.black),
+                                  onPressed: () {
+                                    categories.remove(e);
+                                    setState(() {});
+                                  })
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
+            height: 40.0,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Align(
+                  child: Text(
+                    "Please add relevent categories",
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
+                  alignment: Alignment.centerLeft,
                 ),
+                InkWell(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AddCategories(func: function),
+                    ),
+                  ),
+                  child: Container(
+                    width: 80.0,
+                    height: 40.0,
+                    decoration: BoxDecoration(
+                        color: Colors.orangeAccent,
+                        borderRadius: BorderRadius.circular(50.0)),
+                    child: Center(
+                        child: Text(
+                      "Add",
+                      style: style1,
+                    )),
+                  ),
+                )
+              ],
+            ),
+          ),
 
-                // video link
-                TextField(
-                  controller: recipeLinkController,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              child: _ingredients.length != 0
+                  ? Text("Ingredients:",
+                      style: TextStyle(fontSize: 16, color: Colors.white))
+                  : Text(
+                      "No Ingredients Added",
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.5),
+                      ),
+                    ),
+            ),
+          ),
+
+          Container(
+            color: Colors.transparent,
+            margin: EdgeInsets.only(left: 5.0, right: 5),
+            // height: 85.0 * _methods.length,
+            child: ReorderableColumn(
+              children: _buildIngred(),
+              scrollController: ScrollController(initialScrollOffset: 50),
+              // needsLongPressDraggable: false,
+              onReorder: (oldIndex, newIndex) {
+                setState(() {
+                  // tColor = Colors.black;
+                  // if (newIndex >= _methods.length) {
+                  //   newIndex = _methods.length;
+                  // }
+                  final String temp = _ingredients[oldIndex];
+                  _ingredients.removeAt(oldIndex);
+                  _ingredients.insert(newIndex, temp);
+                });
+              },
+            ),
+          ),
+          // Container(
+          //   margin: EdgeInsets.only(top: 10.0),
+          //   child: Column(
+          //     // onReorder: (oldIndex, newIndex) {
+          //     //   setState(() {
+          //     //     // _updateMyItems(oldIndex,newIndex)
+          //     //     _ingredients[oldIndex] = _ingredients[newIndex];
+          //     //   });
+          //     // },
+          //     children: _ingredients.length != null
+          //         ? _ingredients
+          //             .map(
+          //               (e) => ListTile(
+          //                 key: ValueKey(e),
+          //                 trailing: IconButton(
+          //                     icon: Icon(
+          //                       Icons.delete,
+          //                       color: Colors.white,
+          //                     ),
+          //                     onPressed: () {
+          //                       _ingredients
+          //                           .removeAt(_ingredients.indexOf(e));
+          //                       setState(() {});
+          //                     }),
+          //                 title: Text(
+          //                   "${_ingredients.indexOf(e) + 1}. " + e,
+          //                   style: TextStyle(color: Colors.white),
+          //                 ),
+          //               ),
+          //             )
+          //             .toList()
+          //         : Container(),
+          //   ),
+          // ),
+
+          Row(
+            children: <Widget>[
+              Container(
+                width: MediaQuery.of(context).size.width * 0.6,
+                child: TextField(
+                  controller: recipeIngredientsController,
                   keyboardType: TextInputType.url,
                   decoration: InputDecoration(
                     focusedBorder: UnderlineInputBorder(
@@ -400,320 +735,109 @@ class _AddRecipeState extends State<AddRecipe> {
                       borderSide: BorderSide(color: Colors.white, width: 0.0),
                     ),
                     alignLabelWithHint: true,
-                    labelText: "Youtube Video Link",
+                    labelText: "Add Ingredients",
                     labelStyle: TextStyle(color: Colors.white),
                   ),
+                  onChanged: (email) {},
                 ),
-
-                Row(
-                  children: <Widget>[
-                    Container(
-                      width: MediaQuery.of(context).size.width * 0.4,
-                      child: TextField(
-                        controller: recipeServesController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 0.0),
-                          ),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 0.0),
-                          ),
-                          alignLabelWithHint: true,
-                          labelText: "Serves",
-                          labelStyle: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    Spacer(),
-                    Container(
-                      width: MediaQuery.of(context).size.width * 0.4,
-                      child: TextField(
-                        controller: recipeCookingTimeController,
-                        keyboardType: TextInputType.text,
-                        decoration: InputDecoration(
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 0.0),
-                          ),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 0.0),
-                          ),
-                          alignLabelWithHint: true,
-                          labelText: "Cook Time",
-                          hintText: "2 hr 30 min",
-                          labelStyle: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    margin: EdgeInsets.only(top: 10.0),
-                    child: Text(
-                      "Categories:",
-                      style: style1,
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 50.0,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: categories.length == 0
-                        ? [
-                            Center(
-                              child: Text(
-                                "No category selected",
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.5),
-                                ),
-                              ),
-                            )
-                          ]
-                        : categories
-                            .map(
-                              (e) => Container(
-                                margin: EdgeInsets.only(
-                                    left: 5.0, right: 5.0, top: 10.0),
-                                height: 40.0,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                            top: 8.0, bottom: 8.0, left: 8.0),
-                                        child: Text(
-                                          e,
-                                          style: TextStyle(color: Colors.black),
-                                        ),
-                                      ),
-                                    ),
-                                    IconButton(
-                                        padding: EdgeInsets.all(0.0),
-                                        icon: Image.asset(
-                                            'images/icon/close.png',
-                                            width: 15.0,
-                                            height: 15.0,
-                                            color: Colors.black),
-                                        onPressed: () {
-                                          categories.remove(e);
-                                          setState(() {});
-                                        })
-                                  ],
-                                ),
-                              ),
-                            )
-                            .toList(),
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
+              ),
+              Spacer(),
+              InkWell(
+                onTap: () {
+                  addIngredients(recipeIngredientsController.text);
+                },
+                child: Container(
+                  width: 80.0,
                   height: 40.0,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Align(
-                        child: Text(
-                          "Please add relevent categories",
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+                  decoration: BoxDecoration(
+                      color: Colors.orangeAccent,
+                      borderRadius: BorderRadius.circular(50.0)),
+                  child: Center(
+                      child: Text(
+                    "Add",
+                    style: style1,
+                  )),
+                ),
+              )
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                margin: EdgeInsets.symmetric(vertical: 5.0),
+                child: _methods.length != 0
+                    ? Text("Methods:",
+                        style: TextStyle(fontSize: 16, color: Colors.white))
+                    : Text(
+                        "No Methods Added",
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.5),
                         ),
-                        alignment: Alignment.centerLeft,
                       ),
-                      InkWell(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AddCategories(func: function),
-                          ),
-                        ),
-                        child: Container(
-                          width: 80.0,
-                          height: 40.0,
-                          decoration: BoxDecoration(
-                              color: Colors.orangeAccent,
-                              borderRadius: BorderRadius.circular(50.0)),
-                          child: Center(
-                              child: Text(
-                            "Add",
-                            style: style1,
-                          )),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    child: _ingredients.length != 0
-                        ? Text("Ingredients:",
-                            style: TextStyle(fontSize: 16, color: Colors.white))
-                        : Text(
-                            "No Ingredients Added",
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
-                            ),
-                          ),
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(top: 10.0),
-                  child: Column(
-                    // onReorder: (oldIndex, newIndex) {
-                    //   setState(() {
-                    //     // _updateMyItems(oldIndex,newIndex)
-                    //     _ingredients[oldIndex] = _ingredients[newIndex];
-                    //   });
-                    // },
-                    children: _ingredients.length != null
-                        ? _ingredients
-                            .map(
-                              (e) => ListTile(
-                                key: ValueKey(e),
-                                trailing: IconButton(
-                                    icon: Icon(
-                                      Icons.delete,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: () {
-                                      _ingredients
-                                          .removeAt(_ingredients.indexOf(e));
-                                      setState(() {});
-                                    }),
-                                title: Text(
-                                  "${_ingredients.indexOf(e) + 1}. " + e,
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            )
-                            .toList()
-                        : Container(),
-                  ),
-                ),
-
-                Row(
-                  children: <Widget>[
-                    Container(
-                      width: MediaQuery.of(context).size.width * 0.6,
-                      child: TextField(
-                        controller: recipeIngredientsController,
-                        keyboardType: TextInputType.url,
-                        decoration: InputDecoration(
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 0.0),
-                          ),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 0.0),
-                          ),
-                          alignLabelWithHint: true,
-                          labelText: "Add Ingredients",
-                          labelStyle: TextStyle(color: Colors.white),
-                        ),
-                        onChanged: (email) {},
-                      ),
-                    ),
-                    Spacer(),
-                    InkWell(
-                      onTap: () {
-                        addIngredients(recipeIngredientsController.text);
-                      },
-                      child: Container(
-                        width: 80.0,
-                        height: 40.0,
-                        decoration: BoxDecoration(
-                            color: Colors.orangeAccent,
-                            borderRadius: BorderRadius.circular(50.0)),
-                        child: Center(
-                            child: Text(
-                          "Add",
-                          style: style1,
-                        )),
-                      ),
-                    )
-                  ],
-                ),
-                Container(
-                  child: Column(
-                    children: _methods.length != null
-                        ? _methods
-                            .map(
-                              (e) => ListTile(
-                                trailing: IconButton(
-                                    icon: Icon(
-                                      Icons.delete,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: () {
-                                      _methods.removeAt(_methods.indexOf(e));
-                                      setState(() {});
-                                    }),
-                                title: Text(
-                                  "${_methods.indexOf(e) + 1}. " + e,
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            )
-                            .toList()
-                        : Container(),
-                  ),
-                ),
-                Row(
-                  children: <Widget>[
-                    Container(
-                      width: MediaQuery.of(context).size.width * 0.6,
-                      child: TextField(
-                        controller: recipeMethodsController,
-                        keyboardType: TextInputType.url,
-                        decoration: InputDecoration(
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 0.0),
-                          ),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 0.0),
-                          ),
-                          alignLabelWithHint: true,
-                          labelText: "Add Methods",
-                          labelStyle: TextStyle(color: Colors.white),
-                        ),
-                        onChanged: (email) {},
-                      ),
-                    ),
-                    Spacer(),
-                    InkWell(
-                      onTap: () => addMethods(recipeMethodsController.text),
-                      child: Container(
-                        width: 80.0,
-                        height: 40.0,
-                        decoration: BoxDecoration(
-                            color: Colors.orangeAccent,
-                            borderRadius: BorderRadius.circular(50.0)),
-                        child: Center(
-                            child: Text(
-                          "Add",
-                          style: style1,
-                        )),
-                      ),
-                    )
-                  ],
-                ),
-              ],
+              ),
             ),
+          ),
+          Container(
+            color: Colors.transparent,
+            margin: EdgeInsets.only(left: 5.0, right: 5.0),
+            // height: 85.0 * _methods.length,
+            child: ReorderableColumn(
+              children: _buildMethods(),
+              scrollController: ScrollController(initialScrollOffset: 50),
+              // needsLongPressDraggable: false,
+              onReorder: (oldIndex, newIndex) {
+                setState(() {
+                  // tColor = Colors.black;
+                  // if (newIndex > oldIndex) {
+                  //   newIndex = newIndex - 1;
+                  // }
+                  final String temp = _methods[oldIndex];
+                  _methods.removeAt(oldIndex);
+                  _methods.insert(newIndex, temp);
+                });
+              },
+            ),
+          ),
+          Row(
+            children: <Widget>[
+              Container(
+                width: MediaQuery.of(context).size.width * 0.6,
+                child: TextField(
+                  controller: recipeMethodsController,
+                  keyboardType: TextInputType.url,
+                  decoration: InputDecoration(
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 0.0),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 0.0),
+                    ),
+                    alignLabelWithHint: true,
+                    labelText: "Add Methods",
+                    labelStyle: TextStyle(color: Colors.white),
+                  ),
+                  onChanged: (email) {},
+                ),
+              ),
+              Spacer(),
+              InkWell(
+                onTap: () => addMethods(recipeMethodsController.text),
+                child: Container(
+                  width: 80.0,
+                  height: 40.0,
+                  decoration: BoxDecoration(
+                      color: Colors.orangeAccent,
+                      borderRadius: BorderRadius.circular(50.0)),
+                  child: Center(
+                      child: Text(
+                    "Add",
+                    style: style1,
+                  )),
+                ),
+              )
+            ],
           ),
           !isLoading
               ? Row(
@@ -760,4 +884,7 @@ class _AddRecipeState extends State<AddRecipe> {
     });
     print("not Valid");
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

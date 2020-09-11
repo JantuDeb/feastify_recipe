@@ -1,7 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:recipe/models/recipe.dart';
+import 'package:recipe/screens/recipe_view.dart';
+import 'package:recipe/services/auth.dart';
+
+import 'package:recipe/services/database.dart';
 
 class SearchRecipe extends StatefulWidget {
+  const SearchRecipe({
+    Key key,
+    this.database,
+    this.user,
+  }) : super(key: key);
+  final Database database;
+  final User user;
   @override
   _SearchRecipeState createState() => _SearchRecipeState();
 }
@@ -84,6 +96,10 @@ class _SearchRecipeState extends State<SearchRecipe> {
                     return ListView(
                       children: snapshot.data.documents
                           .map((document) => _buildRow(
+                              user: widget.user,
+                              database: widget.database,
+                              recipe: Recipe.fromMap(
+                                  document.data, document.documentID),
                               avatarImage: document['photoUrl'],
                               name: document['recipeTitle'],
                               recipeDes: document['recipeDescription'],
@@ -107,59 +123,80 @@ class _SearchRecipeState extends State<SearchRecipe> {
   }
 }
 
-Widget _buildRow({String avatarImage, String name, String recipeDes, context}) {
+Widget _buildRow(
+    {@required Recipe recipe,
+    @required Database database,
+    @required User user,
+    String avatarImage,
+    String name,
+    String recipeDes,
+    context}) {
   return Container(
     height: 110.0,
-    child: Row(
-      children: <Widget>[
-        Container(
-          margin: EdgeInsets.all(8.0),
-          width: MediaQuery.of(context).size.width * 0.35,
-          height: 100,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.0), color: Colors.amber),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10.0),
-            child: Image(
-              fit: BoxFit.cover,
-              image: NetworkImage(
-                avatarImage,
+    child: InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RecipeView(
+              database: database,
+              recipe: recipe,
+              // user: user,
+            ),
+          ),
+        );
+      },
+      child: Row(
+        children: <Widget>[
+          Container(
+            margin: EdgeInsets.all(8.0),
+            width: MediaQuery.of(context).size.width * 0.35,
+            height: 100,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0), color: Colors.amber),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: Image(
+                fit: BoxFit.cover,
+                image: NetworkImage(
+                  avatarImage,
+                ),
               ),
             ),
           ),
-        ),
-        Container(
-          width: MediaQuery.of(context).size.width * 0.55,
-          margin: EdgeInsets.only(right: 8.0, top: 10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name,
-                softWrap: true,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold),
-              ),
-              SizedBox(
-                height: 10.0,
-              ),
-              Text(
-                recipeDes,
-                softWrap: true,
-                overflow: TextOverflow.clip,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
-                  fontSize: 15.0,
+          Container(
+            width: MediaQuery.of(context).size.width * 0.55,
+            margin: EdgeInsets.only(right: 8.0, top: 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  softWrap: true,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold),
                 ),
-              )
-            ],
-          ),
-        )
-      ],
+                SizedBox(
+                  height: 10.0,
+                ),
+                Text(
+                  recipeDes,
+                  softWrap: true,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 15.0,
+                  ),
+                )
+              ],
+            ),
+          )
+        ],
+      ),
     ),
   );
 }

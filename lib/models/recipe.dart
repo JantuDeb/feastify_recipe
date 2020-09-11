@@ -13,6 +13,7 @@ class Recipe {
     this.serves,
     this.viewCount,
     this.likes,
+    this.likeCount,
     this.categories,
     this.ingredients,
     this.methods,
@@ -29,7 +30,8 @@ class Recipe {
   final String createdBy;
   final String serves;
   final int viewCount;
-  final int likes;
+  final int likeCount;
+  final Map likes;
   final List<String> categories;
   final List<String> ingredients;
   final List<String> methods;
@@ -49,7 +51,8 @@ class Recipe {
     final String createdBy = data['createdBy'];
     final String serves = data['serves'];
     final int viewCount = data['viewCount'];
-    final int likes = data['likes'];
+    final int likeCount = data['likeCount'];
+    final Map likes = data['likes'];
     final List<String> categories = List.castFrom(data['categories']);
     final List<String> ingredients = List.castFrom(data['ingredients']);
     final List<String> methods = List.castFrom(data['methods']);
@@ -67,6 +70,7 @@ class Recipe {
         serves: serves,
         viewCount: viewCount,
         likes: likes,
+        likeCount: likeCount,
         categories: categories,
         ingredients: ingredients,
         methods: methods,
@@ -85,6 +89,7 @@ class Recipe {
       'serves': serves,
       'viewCount': viewCount,
       'likes': likes,
+      'likeCount': likeCount,
       'categories': categories,
       'ingredients': ingredients,
       'methods': methods,

@@ -1,6 +1,8 @@
 class UserData {
   UserData(
       {this.id,
+      this.followersCount,
+      this.followingCount,
       this.userName,
       this.email,
       this.photoUrl,
@@ -14,6 +16,8 @@ class UserData {
   final String bio;
   final String mobile;
   final String location;
+  final int followersCount;
+  final int followingCount;
 
   factory UserData.fromUserMap(Map<String, dynamic> data, String documentId) {
     if (data == null) {
@@ -25,16 +29,19 @@ class UserData {
     final String bio = data['bio'];
     final String mobile = data['mobile'];
     final String location = data['location'];
+    final int followersCount = data['followersCount'];
+    final int followingCount = data['followingCount'];
 
     return UserData(
-      id: documentId,
-      userName: userName,
-      photoUrl: photoUrl,
-      email: email,
-      bio: bio,
-      mobile: mobile,
-      location: location,
-    );
+        id: documentId,
+        userName: userName,
+        photoUrl: photoUrl,
+        email: email,
+        bio: bio,
+        mobile: mobile,
+        location: location,
+        followersCount: followersCount,
+        followingCount: followingCount);
   }
   Map<String, dynamic> toUserMap() {
     return {

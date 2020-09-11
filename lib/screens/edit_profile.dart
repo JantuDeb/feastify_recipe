@@ -1,59 +1,61 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 import 'package:recipe/models/user.dart';
 
 import 'package:recipe/services/database.dart';
 
 class EditProfile extends StatefulWidget {
-  const EditProfile({Key key, this.database}) : super(key: key);
+  const EditProfile({Key key, this.database, this.userData}) : super(key: key);
   final Database database;
+  final UserData userData;
 
   @override
   _EditProfileState createState() => _EditProfileState();
 }
 
 class _EditProfileState extends State<EditProfile> {
-  UserData userData;
+  // UserData userData;
   String photoUrl;
   bool isLoading;
   File imageFile;
   final picker = ImagePicker();
-  void getData() async {
-    UserData data = await widget.database.getUserById();
-    setState(() {
-      userData = data;
-    });
-  }
+  CollectionReference reference = Firestore.instance.collection("recipes");
+  // void getData() async {
+  //   UserData data = await widget.database.getUserById();
+  //   setState(() {
+  //     // userData = data;
+  //   });
+  // }
 
   @override
   void initState() {
     super.initState();
-    print(userData);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      getData();
-    });
+    // print(userData);
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   getData();
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
     TextEditingController nameController =
-        TextEditingController(text: userData?.userName);
+        TextEditingController(text: widget.userData?.userName);
     TextEditingController emailController =
-        TextEditingController(text: userData?.email);
+        TextEditingController(text: widget.userData?.email);
     TextEditingController mobileController =
-        TextEditingController(text: userData?.mobile);
+        TextEditingController(text: widget.userData?.mobile);
     TextEditingController bioController =
-        TextEditingController(text: userData?.bio);
+        TextEditingController(text: widget.userData?.bio);
     TextEditingController locationController =
-        TextEditingController(text: userData?.location);
+        TextEditingController(text: widget.userData?.location);
 
     Future<void> _submit({@required String photoUrl}) async {
       // final auth = Provider.of<AuthBase>(context, listen: false);
       // final user = Provider.of<User>(context, listen: false);
-      final id = userData?.id;
+      final id = widget.userData?.id;
       // final database = Provider.of<Database>(context, listen: false);
 
       final data = UserData(
@@ -63,18 +65,23 @@ class _EditProfileState extends State<EditProfile> {
           bio: bioController.text,
           mobile: mobileController.text.trim(),
           email: emailController.text.trim().toLowerCase(),
-          location: locationController.text.trim().toLowerCase());
+          location: locationController.text.trim());
 
-      widget.database.updateUserData(data);
+      widget.database
+          .updateUserData(data)
+          .then((value) => Navigator.pop(context));
+      // if (userData.userName != nameController.text) {
+      // reference.document(id).setData({'createdBy': nameController.text});
+      // }
     }
 
-    void _clearController() {
-      nameController.clear();
-      emailController.clear();
-      bioController.clear();
-      mobileController.clear();
-      locationController.clear();
-    }
+    // void _clearController() {
+    //   nameController.clear();
+    //   emailController.clear();
+    //   bioController.clear();
+    //   mobileController.clear();
+    //   locationController.clear();
+    // }
 
     void handleSubmit() async {
       // final database = Provider.of<Database>(context, listen: false);
@@ -82,7 +89,7 @@ class _EditProfileState extends State<EditProfile> {
         String url = await widget.database.uploadImageToStorage(imageFile);
         _submit(photoUrl: url);
       } else {
-        _submit(photoUrl: userData.photoUrl);
+        _submit(photoUrl: widget.userData.photoUrl);
       }
 
       // _clearController();
@@ -90,7 +97,7 @@ class _EditProfileState extends State<EditProfile> {
         // _clearController();
         isLoading = false;
         imageFile = null;
-        getData();
+        // getData();
       });
     }
 
@@ -107,8 +114,7 @@ class _EditProfileState extends State<EditProfile> {
               stream: widget.database.getUserById().asStream(),
               builder: (context, snapshot) {
                 UserData user = snapshot.data;
-                if (snapshot.connectionState == ConnectionState.waiting &&
-                    isLoading == true) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.connectionState == ConnectionState.none) {
@@ -171,7 +177,9 @@ class _EditProfileState extends State<EditProfile> {
                           controller: nameController,
                           keyboardType: TextInputType.text,
                           decoration: InputDecoration(
-                            hintText: "Name",
+                            labelText: "Name",
+                            labelStyle: textStyle,
+                            hintText: "Enter your name",
                             suffixStyle: TextStyle(color: Colors.white),
                             focusedBorder: OutlineInputBorder(
                               borderSide:
@@ -183,7 +191,8 @@ class _EditProfileState extends State<EditProfile> {
                             ),
                             alignLabelWithHint: true,
                             // hintText: "${user.userName}",
-                            hintStyle: TextStyle(color: Colors.white),
+                            hintStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.5)),
                           ),
                         ),
                       ),
@@ -194,7 +203,9 @@ class _EditProfileState extends State<EditProfile> {
                           controller: emailController,
                           keyboardType: TextInputType.text,
                           decoration: InputDecoration(
-                            hintText: "email",
+                            labelStyle: textStyle,
+                            labelText: "Email",
+                            hintText: "Enter your email",
                             suffixStyle: TextStyle(color: Colors.white),
                             focusedBorder: OutlineInputBorder(
                               borderSide:
@@ -206,7 +217,8 @@ class _EditProfileState extends State<EditProfile> {
                             ),
                             alignLabelWithHint: true,
                             // hintText: "${user.email}",
-                            hintStyle: TextStyle(color: Colors.white),
+                            hintStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.5)),
                           ),
                         ),
                       ),
@@ -217,7 +229,9 @@ class _EditProfileState extends State<EditProfile> {
                           controller: mobileController,
                           keyboardType: TextInputType.text,
                           decoration: InputDecoration(
-                            hintText: "mobile",
+                            labelStyle: textStyle,
+                            labelText: "Mobile",
+                            hintText: "Enter your mobile number",
                             suffixStyle: TextStyle(color: Colors.white),
                             focusedBorder: OutlineInputBorder(
                               borderSide:
@@ -229,7 +243,8 @@ class _EditProfileState extends State<EditProfile> {
                             ),
                             alignLabelWithHint: true,
                             // hintText: "${user.mobile}",
-                            hintStyle: TextStyle(color: Colors.white),
+                            hintStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.5)),
                           ),
                         ),
                       ),
@@ -241,6 +256,8 @@ class _EditProfileState extends State<EditProfile> {
                           keyboardType: TextInputType.text,
                           decoration: InputDecoration(
                             hintText: "location",
+                            labelStyle: textStyle,
+                            labelText: "Location",
                             suffixStyle: TextStyle(color: Colors.white),
                             focusedBorder: OutlineInputBorder(
                               borderSide:
@@ -252,7 +269,8 @@ class _EditProfileState extends State<EditProfile> {
                             ),
                             alignLabelWithHint: true,
                             // hintText: "${user.location}",
-                            hintStyle: TextStyle(color: Colors.white),
+                            hintStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.5)),
                           ),
                         ),
                       ),
@@ -265,8 +283,10 @@ class _EditProfileState extends State<EditProfile> {
                           controller: bioController,
                           keyboardType: TextInputType.text,
                           decoration: InputDecoration(
+                            labelStyle: textStyle,
+                            labelText: "Bio",
                             suffixStyle: TextStyle(color: Colors.white),
-                            hintText: "bio",
+                            hintText: "Add your Bio",
                             focusedBorder: OutlineInputBorder(
                               borderSide:
                                   BorderSide(color: Colors.white, width: 0.0),
@@ -277,7 +297,8 @@ class _EditProfileState extends State<EditProfile> {
                             ),
                             alignLabelWithHint: true,
                             // hintText: "${user.bio}",
-                            hintStyle: TextStyle(color: Colors.white),
+                            hintStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.5)),
                           ),
                         ),
                       ),
@@ -291,9 +312,7 @@ class _EditProfileState extends State<EditProfile> {
                             borderRadius: BorderRadius.circular(30.0),
                             splashColor: Colors.white,
                             onTap: () {
-                              // values.removeWhere(
-                              //     (key, value) => value.toString().startsWith('t'));
-                              // setState(() {});
+                              Navigator.pop(context, false);
                             },
                             child: Container(
                               height: 50.0,
