@@ -3,5 +3,5 @@ class Shop {
   final String name;
   final bool isShoped;
 
-  Shop({this.id, this.name, this.isShoped});
+  Shop({required this.id, required this.name, required this.isShoped});
 }

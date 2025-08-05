@@ -8,7 +8,7 @@ import 'package:recipe/services/auth.dart';
 import 'email_sign_in_change_model.dart';
 
 class EmailSignInFormChangeNotifier extends StatefulWidget {
-  EmailSignInFormChangeNotifier({@required this.model});
+  EmailSignInFormChangeNotifier({required this.model});
   final EmailSignInChangeModel model;
 
   static Widget create(BuildContext context) {
@@ -84,7 +84,7 @@ class _EmailSignInFormChangeNotifierState
         onPressed: model.canSubmit ? _submit : null,
       ),
       SizedBox(height: 8.0),
-      FlatButton(
+      TextButton(
         child: Text(model.secondaryButtonText),
         onPressed: !model.isLoading ? _toggleFormType : null,
       ),

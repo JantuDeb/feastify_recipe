@@ -2,23 +2,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Recipe {
   Recipe({
-    this.id,
-    this.recipeId,
-    this.photoUrl,
-    this.recipeTitle,
-    this.recipeDescription,
-    this.recipeLink,
-    this.cookingTime,
-    this.createdBy,
-    this.serves,
-    this.viewCount,
-    this.likes,
-    this.likeCount,
-    this.categories,
-    this.ingredients,
-    this.methods,
-    this.createdAt,
-    this.searchQuery,
+    required this.id,
+    required this.recipeId,
+    required this.photoUrl,
+    required this.recipeTitle,
+    required this.recipeDescription,
+    required this.recipeLink,
+    required this.cookingTime,
+    required this.createdBy,
+    required this.serves,
+    required this.viewCount,
+    required this.likes,
+    required this.likeCount,
+    required this.categories,
+    required this.ingredients,
+    required this.methods,
+    required this.createdAt,
+    required this.searchQuery,
   });
   final String id;
   final String recipeId;
@@ -39,9 +39,6 @@ class Recipe {
   final Timestamp createdAt;
 
   factory Recipe.fromMap(Map<String, dynamic> data, String documentId) {
-    if (data == null) {
-      return null;
-    }
     final String recipeId = data['recipeId'];
     final String photoUrl = data['photoUrl'];
     final String recipeTitle = data['recipeTitle'];
@@ -53,11 +50,11 @@ class Recipe {
     final int viewCount = data['viewCount'];
     final int likeCount = data['likeCount'];
     final Map likes = data['likes'];
-    final List<String> categories = List.castFrom(data['categories']);
-    final List<String> ingredients = List.castFrom(data['ingredients']);
-    final List<String> methods = List.castFrom(data['methods']);
+    final List<String> categories = List.from(data['categories']);
+    final List<String> ingredients = List.from(data['ingredients']);
+    final List<String> methods = List.from(data['methods']);
     final Timestamp createdAt = data['createdAt'];
-    final List<String> searchQuery = List.castFrom(data['searchQuery']);
+    final List<String> searchQuery = List.from(data['searchQuery']);
     return Recipe(
         id: documentId,
         recipeId: recipeId,

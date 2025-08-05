@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:recipe/models/recipe.dart';
 import 'package:recipe/models/user.dart';
-import 'package:recipe/screens/edit_profile.dart';
 import 'package:recipe/screens/recipe_view.dart';
 import 'package:recipe/services/auth.dart';
 

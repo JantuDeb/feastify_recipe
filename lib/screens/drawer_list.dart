@@ -4,7 +4,7 @@ import 'package:recipe/common_widgets/platform_alert_dialog.dart';
 import 'package:recipe/services/auth.dart';
 
 class DrawerList extends StatefulWidget {
-  DrawerList(context, {Key key}) : super(key: key);
+  DrawerList(BuildContext context, {Key? key}) : super(key: key);
 
   @override
   _DrawerListState createState() => _DrawerListState();

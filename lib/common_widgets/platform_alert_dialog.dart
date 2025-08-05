@@ -7,20 +7,18 @@ import 'platform_widget.dart';
 
 class PlatformAlertDialog extends PlatformWidget {
   PlatformAlertDialog({
-    @required this.title,
-    @required this.content,
+    required this.title,
+    required this.content,
     this.cancelActionText,
-    @required this.defaultActionText,
-  })  : assert(title != null),
-        assert(content != null),
-        assert(defaultActionText != null);
+    required this.defaultActionText,
+  });
 
   final String title;
   final String content;
-  final String cancelActionText;
+  final String? cancelActionText;
   final String defaultActionText;
 
-  Future<bool> show(BuildContext context) async {
+  Future<bool?> show(BuildContext context) async {
     return Platform.isIOS
         ? await showCupertinoDialog<bool>(
             context: context,
@@ -56,7 +54,7 @@ class PlatformAlertDialog extends PlatformWidget {
     if (cancelActionText != null) {
       actions.add(
         PlatformAlertDialogAction(
-          child: Text(cancelActionText),
+          child: Text(cancelActionText!),
           onPressed: () => Navigator.of(context).pop(false),
         ),
       );
@@ -72,7 +70,7 @@ class PlatformAlertDialog extends PlatformWidget {
 }
 
 class PlatformAlertDialogAction extends PlatformWidget {
-  PlatformAlertDialogAction({this.child, this.onPressed});
+  PlatformAlertDialogAction({required this.child, required this.onPressed});
   final Widget child;
   final VoidCallback onPressed;
 
@@ -86,7 +84,7 @@ class PlatformAlertDialogAction extends PlatformWidget {
 
   @override
   Widget buildMaterialWidget(BuildContext context) {
-    return FlatButton(
+    return TextButton(
       child: child,
       onPressed: onPressed,
     );

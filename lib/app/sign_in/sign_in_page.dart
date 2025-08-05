@@ -11,9 +11,9 @@ import 'sign_in_manager.dart';
 
 class SignInPage extends StatelessWidget {
   const SignInPage({
-    Key key,
-    @required this.manager,
-    @required this.isLoading,
+    Key? key,
+    required this.manager,
+    required this.isLoading,
   }) : super(key: key);
   final SignInManager manager;
   final bool isLoading;
