@@ -64,7 +64,7 @@ class _SearchRecipeState extends State<SearchRecipe> {
               ),
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: queryString != null && queryString != ''
+                  stream: queryString != ''
                       ? Firestore.instance
                           .collection("recipes")
                           .where("searchQuery",

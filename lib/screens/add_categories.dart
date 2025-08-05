@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class AddCategories extends StatefulWidget {
-  final func;
-  const AddCategories({Key key, this.func});
+  final Function? func;
+  const AddCategories({Key? key, this.func}) : super(key: key);
   @override
   _AddCategoriesState createState() => _AddCategoriesState();
 }
@@ -21,16 +21,16 @@ class _AddCategoriesState extends State<AddCategories> {
   }
 
   final CollectionReference categoryCollection =
-      Firestore.instance.collection('categories');
+      FirebaseFirestore.instance.collection('categories');
   bool isSelected = false;
   Set<String> selectedCategory = {};
   Map<String, bool> values = {};
   Future<void> _getCategories() async {
-    await categoryCollection.getDocuments().then((QuerySnapshot snapshot) {
-      if (snapshot.documents.isNotEmpty) {
-        for (int i = 0; i < snapshot.documents.length; i++) {
-          DocumentSnapshot snap = snapshot.documents[i];
-          values.addAll({snap.documentID.toString(): false});
+    await categoryCollection.get().then((QuerySnapshot snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        for (int i = 0; i < snapshot.docs.length; i++) {
+          DocumentSnapshot snap = snapshot.docs[i];
+          values.addAll({snap.id.toString(): false});
         }
         setState(() {});
       }
@@ -67,9 +67,9 @@ class _AddCategoriesState extends State<AddCategories> {
                                 // style: style2,
                               ),
                               value: values[key],
-                              onChanged: (bool value) {
+                              onChanged: (bool? value) {
                                 setState(() {
-                                  values[key] = value;
+                                  values[key] = value!;
                                 });
                                 print(key);
                                 print(selectedCategory);
@@ -86,8 +86,10 @@ class _AddCategoriesState extends State<AddCategories> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Expanded(
-                      child: RaisedButton(
-                        color: Colors.redAccent,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                        ),
                         onPressed: () {
                           selectedCategory.clear();
 
@@ -100,8 +102,10 @@ class _AddCategoriesState extends State<AddCategories> {
                       width: 20.0,
                     ),
                     Expanded(
-                      child: RaisedButton(
-                        color: Colors.green,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                        ),
                         child: Text("Add"),
                         onPressed: () {
                           values.forEach((key, value) {
@@ -111,7 +115,7 @@ class _AddCategoriesState extends State<AddCategories> {
                               // });
                             }
                           });
-                          widget.func(selectedCategory);
+                          widget.func!(selectedCategory);
                           Navigator.pop(context);
                         },
                       ),

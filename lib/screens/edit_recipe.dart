@@ -233,42 +233,41 @@ class _EditRecipeState extends State<EditRecipe> {
             ],
           ),
         );
-      } else if (_imageFile != null) {
-        return Container(
-          width: MediaQuery.of(context).size.width,
-          child: Stack(fit: StackFit.expand, children: [
-            Container(
-              child: Image.file(
-                _imageFile,
-                fit: BoxFit.cover,
-              ),
+      } else      return Container(
+        width: MediaQuery.of(context).size.width,
+        child: Stack(fit: StackFit.expand, children: [
+          Container(
+            child: Image.file(
+              _imageFile,
+              fit: BoxFit.cover,
             ),
-            Align(
-              alignment: Alignment.topRight,
-              child: Container(
-                margin: EdgeInsets.all(10),
-                width: 35.0,
-                height: 35.0,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50.0),
-                    color: Colors.black54),
-                child: IconButton(
-                    padding: EdgeInsets.all(0.0),
-                    icon: Image.asset(
-                      "images/icon/close.png",
-                      width: 15.0,
-                      height: 15.0,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _imageFile = null;
-                      });
-                    }),
-              ),
+          ),
+          Align(
+            alignment: Alignment.topRight,
+            child: Container(
+              margin: EdgeInsets.all(10),
+              width: 35.0,
+              height: 35.0,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50.0),
+                  color: Colors.black54),
+              child: IconButton(
+                  padding: EdgeInsets.all(0.0),
+                  icon: Image.asset(
+                    "images/icon/close.png",
+                    width: 15.0,
+                    height: 15.0,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _imageFile = null;
+                    });
+                  }),
             ),
-          ]),
-        );
-      }
+          ),
+        ]),
+      );
+
 
       return Container(
         width: MediaQuery.of(context).size.width,

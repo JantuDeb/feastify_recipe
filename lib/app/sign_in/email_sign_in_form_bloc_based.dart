@@ -9,7 +9,7 @@ import 'email_sign_in_bloc.dart';
 import 'email_sign_in_model.dart';
 
 class EmailSignInFormBlocBased extends StatefulWidget {
-  EmailSignInFormBlocBased({@required this.bloc});
+  EmailSignInFormBlocBased({required this.bloc});
   final EmailSignInBloc bloc;
 
   static Widget create(BuildContext context) {
@@ -79,7 +79,7 @@ class _EmailSignInFormBlocBasedState extends State<EmailSignInFormBlocBased> {
         onPressed: model.canSubmit ? _submit : null,
       ),
       SizedBox(height: 8.0),
-      FlatButton(
+      TextButton(
         child: Text(model.secondaryButtonText),
         onPressed: !model.isLoading ? _toggleFormType : null,
       ),
@@ -126,13 +126,13 @@ class _EmailSignInFormBlocBasedState extends State<EmailSignInFormBlocBased> {
         stream: widget.bloc.modelStream,
         initialData: EmailSignInModel(),
         builder: (context, snapshot) {
-          final EmailSignInModel model = snapshot.data;
+          final EmailSignInModel? model = snapshot.data;
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
-              children: _buildChildren(model),
+              children: _buildChildren(model!),
             ),
           );
         });

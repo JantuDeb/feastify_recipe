@@ -16,8 +16,8 @@ import 'package:reorderables/reorderables.dart';
 // import 'package:reorderables/reorderables.dart';
 
 class AddRecipe extends StatefulWidget {
-  const AddRecipe({Key key, this.recipe}) : super(key: key);
-  final Recipe recipe;
+  const AddRecipe({Key? key, this.recipe}) : super(key: key);
+  final Recipe? recipe;
 
   @override
   _AddRecipeState createState() => _AddRecipeState();
@@ -28,11 +28,11 @@ class _AddRecipeState extends State<AddRecipe>
   List<String> _ingredients = [];
   List<String> _methods = [];
   Set<String> categories = {};
-  File imageFile;
+  File? imageFile;
   // String imgUrl;
 
   final picker = ImagePicker();
-  List<String> searchList = List();
+  List<String> searchList = [];
 
   //Controllers
   final recipeIngredientsController = TextEditingController();
@@ -43,7 +43,7 @@ class _AddRecipeState extends State<AddRecipe>
   final recipeServesController = TextEditingController();
   final recipeCookingTimeController = TextEditingController();
   bool isLoading = false;
-  UserData userData;
+  UserData? userData;
 
   @override
   void dispose() {
@@ -81,7 +81,7 @@ class _AddRecipeState extends State<AddRecipe>
   //   return url;
   // }
 
-  Future<void> _submit({@required String photoUrl}) async {
+  Future<void> _submit({required String photoUrl}) async {
     print(recipeTitleController.text.length);
     setSearchParam(recipeTitleController.text);
     // final auth = Provider.of<AuthBase>(context, listen: false);
@@ -93,7 +93,7 @@ class _AddRecipeState extends State<AddRecipe>
         id: id,
         photoUrl: photoUrl,
         recipeTitle: recipeTitleController.text,
-        createdBy: userData.userName,
+        createdBy: userData!.userName,
         categories: categories.toList(),
         methods: _methods,
         ingredients: _ingredients,
@@ -105,23 +105,11 @@ class _AddRecipeState extends State<AddRecipe>
         searchQuery: searchList,
         likes: {},
         viewCount: 0,
+        likeCount: 0,
         createdAt: Timestamp.now());
     database.createRecipe(recipe);
   }
 
-  // Future _getLocaleImage(String s) async {
-  //   if (s == "camera") {
-  //     final pickedFile = await picker.getImage(source: ImageSource.camera);
-  //     setState(() {
-  //       if (pickedFile != null) _imageFile = File(pickedFile.path);
-  //     });
-  //   } else {
-  //     final pickedFile = await picker.getImage(source: ImageSource.gallery);
-  //     setState(() {
-  //       if (pickedFile != null) _imageFile = File(pickedFile.path);
-  //     });
-  //   }
-  // }
   void _clearController() {
     recipeIngredientsController.clear();
     recipeMethodsController.clear();
@@ -139,15 +127,12 @@ class _AddRecipeState extends State<AddRecipe>
 
   bool isValid() {
     if (_ingredients.length >= 1 &&
-            _methods.length >= 1 &&
-            categories.length >= 1 &&
-            recipeTitleController.text.length >= 5 &&
-            recipeDesController.text.length >= 10 &&
-            recipeServesController.text.isNotEmpty &&
-            recipeCookingTimeController.text.length >= 3
-        // &&_imageUrl != null
-        ) {
-      // compressImage();
+        _methods.length >= 1 &&
+        categories.length >= 1 &&
+        recipeTitleController.text.length >= 5 &&
+        recipeDesController.text.length >= 10 &&
+        recipeServesController.text.isNotEmpty &&
+        recipeCookingTimeController.text.length >= 3) {
       return true;
     } else {
       return false;
@@ -165,38 +150,14 @@ class _AddRecipeState extends State<AddRecipe>
 
   void handleSubmit() async {
     final database = Provider.of<Database>(context, listen: false);
-    String url = await database.uploadImageToStorage(imageFile);
+    String url = await database.uploadImageToStorage(imageFile!);
     _submit(photoUrl: url);
     _clearController();
     setState(() {
-      // _clearController();
       isLoading = false;
       imageFile = null;
     });
   }
-  // Future<void> compressImage() async {
-  //   if (imageFile != null) {
-  //     print('starting compression');
-  //     final tempDir = await getTemporaryDirectory();
-  //     final path = tempDir.path;
-  //     int rand = Random().nextInt(10000);
-
-  //     Im.Image image = Im.decodeImage((imageFile).readAsBytesSync());
-  //     Im.copyResize(image, height: 675, width: 960);
-
-  //     var _newImage = new File('$path/img_$rand.jpg')
-  //       ..writeAsBytesSync(Im.encodeJpg(image, quality: 23));
-
-  //     setState(() {
-  //       imageFile = _newImage;
-  //       isLoading = false;
-  //       print('done');
-  //     });
-  //   } else {
-  //     print("error ");
-  //     isLoading = false;
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +180,7 @@ class _AddRecipeState extends State<AddRecipe>
           child: Stack(fit: StackFit.expand, children: [
             Container(
               child: Image.file(
-                imageFile,
+                imageFile!,
                 fit: BoxFit.cover,
               ),
             ),
@@ -275,14 +236,14 @@ class _AddRecipeState extends State<AddRecipe>
               children: [
                 InkWell(
                   onTap: () async {
-                    final pickedFile = await picker.getImage(
-                        preferredCameraDevice: CameraDevice.rear,
-                        imageQuality: 50,
+                    final pickedFile = await picker.pickImage(
                         source: ImageSource.camera,
+                        imageQuality: 50,
                         maxHeight: 960,
                         maxWidth: 675);
                     setState(() {
-                      if (pickedFile != null) imageFile = File(pickedFile.path);
+                      if (pickedFile != null)
+                        imageFile = File(pickedFile.path);
                     });
                   },
                   child: Container(
@@ -304,13 +265,14 @@ class _AddRecipeState extends State<AddRecipe>
                 ),
                 InkWell(
                   onTap: () async {
-                    final pickedFile = await picker.getImage(
+                    final pickedFile = await picker.pickImage(
                         source: ImageSource.gallery,
                         imageQuality: 50,
                         maxHeight: 960,
                         maxWidth: 675);
                     setState(() {
-                      if (pickedFile != null) imageFile = File(pickedFile.path);
+                      if (pickedFile != null)
+                        imageFile = File(pickedFile.path);
                     });
                   },
                   child: Container(
